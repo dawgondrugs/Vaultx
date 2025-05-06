@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Wallet Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>VaultX</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#wallet">Wallet</a>
+      <a href="#support">Support</a>
+      <a href="#" id="logout-btn" style="display: none;" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h2>Deposit. Store. Withdraw.</h2>
+    <p>Simple and secure money management portal designed for your convenience.</p>
+  </section>
+
+  <section class="wallet-section" id="wallet" style="display: none;">
+    <h3>Wallet Manager</h3>
+    <input type="number" placeholder="Enter amount" id="amount">
+    <div class="button-group">
+      <button onclick="deposit()">Deposit</button>
+      <button onclick="withdraw()">Withdraw</button>
+    </div>
+    <p class="balance-display">Current Balance: ₹<span id="balance">0</span></p>
+    
+    <div class="qr-code-section">
+      <h4>Deposit via QR Code</h4>
+      <p>Scan the QR code below to make a deposit to your account</p>
+      <div class="qr-container">
+        <img id="deposit-qr" src="/pictures/QR.jpeg" alt="Deposit QR Code">
+      </div>
+      <p class="qr-caption">All deposits will be processed manually by the admin</p>
+    </div>
+
+    <div class="deposit-form">
+      <label for="reference-id">Payment Reference ID :</label>
+      <input type="text" id="reference-id" placeholder="Enter payment reference ID">
+      <p class="help-text">After making payment via QR code, enter any reference ID from your payment app</p>
+    </div>
+
+    <div class="deposit-status">
+      <h4>Deposit Requests</h4>
+      <div id="pending-deposits">No pending deposits</div>
+    </div>
+
+    <div class="withdrawal-status" id="withdrawal-status">
+      <h4>Withdrawal Requests</h4>
+      <div id="pending-withdrawals">No pending withdrawals</div>
+    </div>
+    
+    <div class="history">
+      <h4>Transaction History</h4>
+      <ul id="history-list"></ul>
+    </div>
+  </section>
+
+  <section class="login-section" id="login">
+    <h3>Login</h3>
+    <input type="text" placeholder="Username" id="username">
+    <input type="password" placeholder="Password" id="password">
+    <button onclick="login()">Login</button>
+    <p id="login-status"></p>
+    <p>Don't have an account? <a href="#signup" onclick="toggleSignup(true)">Sign up here</a>.</p>
+  </section>
+
+  <section class="login-section" id="signup" style="display: none;">
+    <h3>Sign Up</h3>
+    <input type="text" placeholder="New Username" id="new-username">
+    <input type="password" placeholder="New Password" id="new-password">
+    <button onclick="signup()">Sign Up</button>
+    <p id="signup-status" class="status-message"></p>
+    <p>Already have an account? <a href="#login" onclick="toggleSignup(false)">Login here</a>.</p>
+  </section>
+
+  <footer>
+    &copy; 2025 VaultX. All rights reserved.
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

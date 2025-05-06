@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VaultX Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    body {
+      background: #0f0f1a;
+      color: #ffffff;
+      padding: 2rem;
+    }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    h1 {
+      color: #00ffcc;
+    }
+    
+    .admin-panel {
+      background-color: #1a1a2e;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+      margin-bottom: 2rem;
+    }
+    
+    .withdrawal-requests, .deposit-requests {
+      margin-top: 1rem;
+    }
+    
+    .request-card {
+      background-color: #2e2e4e;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .request-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    
+    .username {
+      font-weight: bold;
+      color: #00ffcc;
+    }
+    
+    .amount {
+      font-weight: bold;
+      color: #ffaa00;
+    }
+    
+    .request-date {
+      color: #aaa;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .reference {
+      font-size: 0.9rem;
+      color: #ddd;
+      margin-bottom: 0.5rem;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .approve-btn {
+      background-color: #00ffcc;
+      color: #000;
+    }
+    
+    .reject-btn {
+      background-color: #ff3366;
+      color: #fff;
+    }
+    
+    textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      background-color: #3e3e5e;
+      color: #fff;
+      border: none;
+      margin-top: 0.5rem;
+    }
+    
+    .no-requests {
+      color: #aaa;
+      font-style: italic;
+      padding: 1rem 0;
+    }
+    
+    .refresh-btn {
+      background-color: #4e4e6e;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>VaultX Admin Panel</h1>
+    <button id="refresh-btn" class="refresh-btn">Refresh</button>
+  </header>
+  
+  <div class="admin-panel">
+    <h2>Pending Withdrawal Requests</h2>
+    <div id="withdrawal-requests" class="withdrawal-requests">
+      <div class="no-requests">Loading requests...</div>
+    </div>
+  </div>
+
+  <div class="admin-panel">
+    <h2>Pending Deposit Requests</h2>
+    <div id="deposit-requests" class="deposit-requests">
+      <div class="no-requests">Loading requests...</div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPendingRequests();
+      loadPendingDeposits();
+      
+      document.getElementById('refresh-btn').addEventListener('click', () => {
+        loadPendingRequests();
+        loadPendingDeposits();
+      });
+    });
+    
+    async function loadPendingRequests() {
+      const requestsContainer = document.getElementById('withdrawal-requests');
+      
+      try {
+        const response = await fetch('http://localhost:3000/admin/pending-withdrawals');
+        const data = await response.json();
+        
+        if (!data.requests || data.requests.length === 0) {
+          requestsContainer.innerHTML = '<div class="no-requests">No pending withdrawal requests</div>';
+          return;
+        }
+        
+        requestsContainer.innerHTML = '';
+        
+        data.requests.forEach(request => {
+          const requestCard = document.createElement('div');
+          requestCard.className = 'request-card';
+          requestCard.innerHTML = `
+            <div class="request-header">
+              <span class="username">${request.username}</span>
+              <span class="amount">₹${parseFloat(request.amount).toFixed(2)}</span>
+            </div>
+            <div class="request-date">Requested on: ${new Date(request.request_date).toLocaleString()}</div>
+            <div>
+              <textarea id="notes-${request.id}" placeholder="Admin notes (optional)"></textarea>
+            </div>
+            <div class="action-buttons">
+              <button class="approve-btn" onclick="processRequest(${request.id}, 'approve')">Approve</button>
+              <button class="reject-btn" onclick="processRequest(${request.id}, 'reject')">Reject</button>
+            </div>
+          `;
+          
+          requestsContainer.appendChild(requestCard);
+        });
+      } catch (error) {
+        console.error('Error loading requests:', error);
+        requestsContainer.innerHTML = '<div class="no-requests">Error loading requests. Server might be down.</div>';
+      }
+    }
+    
+    async function loadPendingDeposits() {
+      const requestsContainer = document.getElementById('deposit-requests');
+      
+      try {
+        const response = await fetch('http://localhost:3000/admin/pending-deposits');
+        const data = await response.json();
+        
+        if (!data.requests || data.requests.length === 0) {
+          requestsContainer.innerHTML = '<div class="no-requests">No pending deposit requests</div>';
+          return;
+        }
+        
+        requestsContainer.innerHTML = '';
+        
+        data.requests.forEach(request => {
+          const requestCard = document.createElement('div');
+          requestCard.className = 'request-card';
+          requestCard.innerHTML = `
+            <div class="request-header">
+              <span class="username">${request.username}</span>
+              <span class="amount">₹${parseFloat(request.amount).toFixed(2)}</span>
+            </div>
+            <div class="request-date">Requested on: ${new Date(request.request_date).toLocaleString()}</div>
+            ${request.reference_id ? `<div class="reference">Reference ID: ${request.reference_id}</div>` : ''}
+            <div>
+              <textarea id="deposit-notes-${request.id}" placeholder="Admin notes (optional)"></textarea>
+            </div>
+            <div class="action-buttons">
+              <button class="approve-btn" onclick="processDepositRequest(${request.id}, 'approve')">Approve</button>
+              <button class="reject-btn" onclick="processDepositRequest(${request.id}, 'reject')">Reject</button>
+            </div>
+          `;
+          
+          requestsContainer.appendChild(requestCard);
+        });
+      } catch (error) {
+        console.error('Error loading deposit requests:', error);
+        requestsContainer.innerHTML = '<div class="no-requests">Error loading requests. Server might be down.</div>';
+      }
+    }
+    
+    async function processRequest(requestId, action) {
+      const notesElement = document.getElementById(`notes-${requestId}`);
+      const adminNotes = notesElement ? notesElement.value : '';
+      
+      try {
+        const response = await fetch(`http://localhost:3000/admin/withdrawal-action/${requestId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action,
+            admin_notes: adminNotes
+          })
+        });
+        
+        const data = await response.json();
+        alert(data.message);
+        
+        // Reload the requests
+        loadPendingRequests();
+      } catch (error) {
+        console.error(`Error ${action}ing request:`, error);
+        alert(`Failed to ${action} the request. Server might be down.`);
+      }
+    }
+    
+    async function processDepositRequest(requestId, action) {
+      const notesElement = document.getElementById(`deposit-notes-${requestId}`);
+      const adminNotes = notesElement ? notesElement.value : '';
+      
+      try {
+        const response = await fetch(`http://localhost:3000/admin/deposit-action/${requestId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action,
+            admin_notes: adminNotes
+          })
+        });
+        
+        const data = await response.json();
+        alert(data.message);
+        
+        // Reload the requests
+        loadPendingDeposits();
+      } catch (error) {
+        console.error(`Error ${action}ing deposit request:`, error);
+        alert(`Failed to ${action} the deposit request. Server might be down.`);
+      }
+    }
+  </script>
+</body>
+</html>
